@@ -1,4 +1,5 @@
 // syntax nodes
+#[derive(Debug)]
 pub enum Node {
     IntLiteral(i32),
     // single argument, body
@@ -12,6 +13,28 @@ pub enum Node {
 }
 
 impl Node {
+    // helpers, thank goodness
+    pub fn int(n: i32) -> Node {
+        Node::IntLiteral(n)
+    }
+
+    pub fn fun(arg: &str, body: Node) -> Node {
+        Node::Function(arg.to_string(), Box::new(body))
+    }
+
+    pub fn var(name: &str) -> Node {
+        Node::Variable(name.to_string())
+    }
+
+    pub fn call(fun: Node, arg: Node) -> Node {
+        Node::Call(Box::new(fun), Box::new(arg))
+    }
+
+    // had to rename argh
+    pub fn set(name: &str, value: Node, rest: Node) -> Node {
+        Node::Let(name.to_string(), Box::new(value), Box::new(rest))
+    }
+
     pub fn to_string(&self) -> String {
         match self {
             Node::IntLiteral(n) => format!("{n}"),
@@ -45,13 +68,6 @@ impl Type {
 
     pub fn bool() -> Type {
         Type::Concrete("Bool".to_string(), vec![])
-    }
-
-    pub fn id(&self) -> usize {
-        match self {
-            Type::Abstract(id) => *id,
-            Type::Concrete(..) => panic!("Type has no id!"),
-        }
     }
 
     // TypeChecker provides a better version
