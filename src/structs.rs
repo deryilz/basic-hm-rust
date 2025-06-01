@@ -2,6 +2,7 @@
 #[derive(Debug)]
 pub enum Node {
     IntLiteral(i32),
+    BoolLiteral(bool),
     // single argument, body
     Function(String, Box<Node>),
     // variable name
@@ -18,6 +19,10 @@ impl Node {
         Node::IntLiteral(n)
     }
 
+    pub fn bool(b: bool) -> Node {
+        Node::BoolLiteral(b)
+    }
+
     pub fn fun(arg: &str, body: Node) -> Node {
         Node::Function(arg.to_string(), Box::new(body))
     }
@@ -26,8 +31,8 @@ impl Node {
         Node::Variable(name.to_string())
     }
 
-    pub fn call(fun: Node, arg: Node) -> Node {
-        Node::Call(Box::new(fun), Box::new(arg))
+    pub fn call(self: Node, arg: Node) -> Node {
+        Node::Call(Box::new(self), Box::new(arg))
     }
 
     // had to rename argh
@@ -37,6 +42,7 @@ impl Node {
 
     pub fn to_string(&self) -> String {
         match self {
+            Node::BoolLiteral(b) => format!("{b}"),
             Node::IntLiteral(n) => format!("{n}"),
             Node::Function(arg, body) => format!("{} => ({})", arg, body.to_string()),
             Node::Variable(name) => name.clone(),

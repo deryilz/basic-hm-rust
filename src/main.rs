@@ -26,11 +26,12 @@ impl TypeChecker {
     }
 
     fn analyze(&mut self, node: Node, env: &Env, non_gen: &[usize]) -> Type {
-        println!("-- CALL analyze");
-        println!("{:?}", node);
-        println!("{:?}", env);
-        println!("{:?}", non_gen);
+        // println!("-- CALL analyze");
+        // println!("{:?}", node);
+        // println!("{:?}", env);
+        // println!("{:?}", non_gen);
         match node {
+            Node::BoolLiteral(_) => Type::bool(),
             Node::IntLiteral(_) => Type::int(),
             Node::Variable(name) => match env.get(&name) {
                 Some(var_type) => self.fresh(var_type.clone(), non_gen, &mut NewIdMap::new()),
@@ -66,10 +67,10 @@ impl TypeChecker {
 
     // basically clones the type. new_ids is blank to begin with
     fn fresh(&mut self, ty: Type, non_gen: &[usize], new_ids: &mut NewIdMap) -> Type {
-        println!("-- CALL fresh");
-        println!("{:?}", ty);
-        println!("{:?}", non_gen);
-        println!("{:?}", new_ids);
+        // println!("-- CALL fresh");
+        // println!("{:?}", ty);
+        // println!("{:?}", non_gen);
+        // println!("{:?}", new_ids);
         match self.prune(ty) {
             Type::Abstract(id) => {
                 if self.type_still_generic(id, non_gen) {
@@ -92,9 +93,9 @@ impl TypeChecker {
     }
 
     fn unify(&mut self, t1: Type, t2: Type) {
-        println!("-- CALL unify");
-        println!("{:?}", t1);
-        println!("{:?}", t2);
+        // println!("-- CALL unify");
+        // println!("{:?}", t1);
+        // println!("{:?}", t2);
         let t1 = self.prune(t1);
         let t2 = self.prune(t2);
         if t1 == t2 {
@@ -126,8 +127,8 @@ impl TypeChecker {
     }
 
     fn prune(&mut self, ty: Type) -> Type {
-        println!("-- CALL prune");
-        println!("{:?}", ty);
+        // println!("-- CALL prune");
+        // println!("{:?}", ty);
 
         if let Type::Abstract(id) = ty {
             if let Some(inst) = self.types[id].clone() {
@@ -164,8 +165,8 @@ impl TypeChecker {
     // useful for printing
     fn simplified(&self, ty: Type) -> Type {
         match ty {
-            Type::Abstract(id) => match self.types[id] {
-                Some(Type::Abstract(other_id)) => Type::Abstract(other_id),
+            Type::Abstract(id) => match &self.types[id] {
+                Some(other) => self.simplified(other.clone()),
                 _ => Type::Abstract(id),
             },
             Type::Concrete(name, args) => {
@@ -187,7 +188,8 @@ fn main() {
         Type::function(t1.clone(), Type::function(t1.clone(), t1)),
     );
 
-    let term = Node::fun("x", Node::var("x"));
+    let term = Node::fun("x", Node::var("+").call(Node::var("x")).call(Node::int(3)))
+        .call(Node::bool(true));
     // let term = Node::fun(
     //     "x",
     //     Node::fun(
