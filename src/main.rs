@@ -102,8 +102,8 @@ impl TypeChecker {
             return;
         }
 
-        match (t1, t2) {
-            (Type::Abstract(id), t2) => {
+        match (t1.clone(), t2.clone()) {
+            (Type::Abstract(id), _) => {
                 if self.type_overlaps(id, &t2) {
                     panic!("Recursive unification is bad!")
                 }
@@ -113,8 +113,11 @@ impl TypeChecker {
             }
             (Type::Concrete(name1, args1), Type::Concrete(name2, args2)) => {
                 if name1 != name2 || args1.len() != args2.len() {
-                    // TODO: more descriptive error message
-                    panic!("Types don't match.")
+                    panic!(
+                        "Types don't match: {} != {}",
+                        t1.to_string(),
+                        t2.to_string()
+                    )
                 }
 
                 for (a1, a2) in args1.into_iter().zip(args2.into_iter()) {
@@ -188,16 +191,16 @@ fn main() {
         Type::function(t1.clone(), Type::function(t1.clone(), t1)),
     );
 
-    let term = Node::fun("x", Node::var("+").call(Node::var("x")).call(Node::int(3)))
-        .call(Node::bool(true));
-    // let term = Node::fun(
+    use Node as N;
+    let term = N::fun("x", N::var("+").call(N::var("x")).call(N::int(3))).call(N::int(3));
+    // let term = N::fun(
     //     "x",
-    //     Node::fun(
+    //     N::fun(
     //         "y",
-    //         Node::call(Node::call(Node::var("+"), Node::var("x")), Node::var("y")),
+    //         N::call(N::call(N::var("+"), N::var("x")), N::var("y")),
     //     ),
     // );
-    // let term = Node::int(3);
+    // let term = N::int(3);
 
     let result = checker.analyze(term, &env, &[]);
     let result = checker.simplified(result);
